@@ -1,0 +1,22 @@
+{
+  "name": "neuron-container",
+  "version": "0.8.0",
+  "homepage": "https://github.com/partnering/neuron-container",
+  "authors": [
+    "Sylvain Mahe <sylv.mahe@gmail.com>"
+  ],
+  "description": "Polymer WebComponent for containing neuron-enabled controls. Helps managing connection state and so on",
+  "main": "neuron-container.html",
+  "license": "LGPL v3.0",
+  "ignore": [
+    "**/.*",
+    "node_modules",
+    "bower_components",
+    "test",
+    "tests"
+  ],
+  "dependencies": {
+    "diya-sdk": "partnering/diya-sdk",
+    "polymer": "Polymer/polymer#0.5"
+  }
+}
