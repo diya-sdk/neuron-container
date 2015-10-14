@@ -7,72 +7,82 @@
 	</template>
 </dom-module>
 <script>
-  Polymer({
-    is: 'neuron-container',
-    properties: {
-      selector: {
-        notify: true,
-        observer: 'selectorChanged'
-      },
-      state: { notify: true }
-    },
-    ready: function () {
-      this.state = 'disconnected';
-      this.selectedNodes = [];
-      this.stateChangeCallback = this.computeState.bind(this);
-      document.addEventListener('visibilitychange', this.visibilityChange.bind(this), false);
-    },
-    visibilityChange: function () {
-      if (document.hidden) {
-        this.clearRTC();
-      } else {
-        this.connectRTC();
-      }
-    },
-    selectorChanged: function () {
-      this.clearRTC();
-      this.connectRTC();
-    },
-    clearRTC: function () {
-      if (this._rtc)
-        this._rtc.disconnect();
-      while (this.selectedNodes.length)
-        this.selectedNodes.pop();
-      this.detachNeuronListeners();
-    },
-    connectRTC: function () {
-      this._rtc = d1(this.selector).rtc(this, this.selectedNodes).connect();
-      this.attachNeuronListeners();
-    },
-    attachNeuronListeners: function () {
-      var that = this;
-      this.selectedNodes.forEach(function (node) {
-        node.addEventListener('state-changed', that.stateChangeCallback);
-      });
-    },
-    detachNeuronListeners: function () {
-      var that = this;
-      this.selectedNodes.forEach(function (node) {
-        node.removeEventListener('state-changed', that.stateChangeCallback);
-      });
-    },
-    computeState: function () {
-      var count = 0;
-      var newState = '';
-      this.selectedNodes.forEach(function (node) {
-        if (node.state === 'connected')
-          count++;
-      });
-      if (count === 0)
-        newState = 'disconnected';
-      else if (count < this.selectedNodes.length)
-        newState = 'partially-connected';
-      else
-        newState = 'connected';
-      if (newState !== this.state) {
-        this.state = newState;
-        this.fire('state-changed', this.state);
-      }
-    }
-  });
+Polymer({
+	is: 'neuron-container',
+	properties: {
+		selector: { notify: true, observer: 'selectorChanged' },
+		state: { notify: true }
+	},
+
+	ready: function () {
+		this.state = 'disconnected';
+		this.selectedNodes = [];
+		this.stateChangeCallback = this.computeState.bind(this);
+		document.addEventListener('visibilitychange', this.visibilityChange.bind(this), false);
+	},
+	
+	visibilityChange: function () {
+		if (document.hidden) {
+			this.clearRTC();
+		} else {
+			this.connectRTC();
+		}
+	},
+
+	selectorChanged: function () {
+		this.clearRTC();
+		if(this.selector) 
+			this.connectRTC();
+	},
+			 
+	clearRTC: function () {
+		if (this._rtc)
+			this._rtc.disconnect();
+
+		while (this.selectedNodes.length)
+			this.selectedNodes.pop();
+	
+		this.detachNeuronListeners();
+	},
+
+	connectRTC: function () {
+		console.log(new Error().stack);
+		this._rtc = d1(this.selector).rtc(this, this.selectedNodes).connect();
+		this.attachNeuronListeners();
+	},
+
+	attachNeuronListeners: function () {
+		var that = this;
+		this.selectedNodes.forEach(function (node) {
+			node.addEventListener('state-changed', that.stateChangeCallback);
+		});
+	},
+ 
+	detachNeuronListeners: function () {
+		var that = this;
+		this.selectedNodes.forEach(function (node) {
+			node.removeEventListener('state-changed', that.stateChangeCallback);
+		});
+	},
+
+	computeState: function () {
+		var count = 0;
+		var newState = '';
+		this.selectedNodes.forEach(function (node) {
+			if (node.state === 'connected')
+          			count++;
+		});
+		if (count === 0)
+			newState = 'disconnected';
+		else if (count < this.selectedNodes.length)
+			newState = 'partially-connected';
+		else
+			newState = 'connected';
+		
+		if (newState !== this.state) {
+        		this.state = newState;
+			this.fire('state-changed', this.state);
+		}
+	}
+});
 </script>
