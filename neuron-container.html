@@ -46,7 +46,7 @@ Polymer({
 	},
 
 	connectRTC: function () {
-		console.log(new Error().stack);
+		// console.log(new Error().stack);
 		this._rtc = d1(this.selector).rtc(this, this.selectedNodes).connect();
 		this.attachNeuronListeners();
 	},
