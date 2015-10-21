@@ -11,7 +11,8 @@ Polymer({
 	is: 'neuron-container',
 	properties: {
 		selector: { notify: true, observer: 'selectorChanged' },
-		state: { notify: true }
+		state: { notify: true },
+    bypass: { type:Boolean, notify: true, value: false }
 	},
 
 	ready: function () {
@@ -22,6 +23,7 @@ Polymer({
 	},
 
 	visibilityChange: function () {
+    if(this.bypass) return;
 		if (document.hidden) {
 			this.clearRTC();
 		} else {
@@ -30,6 +32,7 @@ Polymer({
 	},
 
 	selectorChanged: function () {
+    if(this.bypass) return;
 		this.clearRTC();
   	if(this.selector)	this.connectRTC();
 	},
