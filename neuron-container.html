@@ -2,7 +2,7 @@
 
 
 <dom-module id="neuron-container">
-  <template>
+	<template>
 		<content id="content"></content>
 	</template>
 </dom-module>
@@ -12,7 +12,7 @@ Polymer({
 	properties: {
 		selector: { notify: true, observer: 'selectorChanged' },
 		state: { notify: true },
-    bypass: { type:Boolean, notify: true, value: false }
+		bypass: { type:Boolean, notify: true, value: false }
 	},
 
 	ready: function () {
@@ -23,7 +23,7 @@ Polymer({
 	},
 
 	visibilityChange: function () {
-    if(this.bypass) return;
+		if(this.bypass) return;
 		if (document.hidden) {
 			this.clearRTC();
 		} else {
@@ -32,25 +32,25 @@ Polymer({
 	},
 
 	selectorChanged: function () {
-    if(this.bypass) return;
+		if(this.bypass) return;
 		this.clearRTC();
-  	if(this.selector)	this.connectRTC();
+		if(this.selector)	this.connectRTC();
 	},
 
 	clearRTC: function () {
 		if (this._rtc)
-			this._rtc.disconnect();
+		this._rtc.disconnect();
 
-    if(this.selectedNodes)
-		  while (this.selectedNodes.length)
-			   this.selectedNodes.pop();
+		if(this.selectedNodes)
+		while (this.selectedNodes.length)
+		this.selectedNodes.pop();
 
 		this.detachNeuronListeners();
 	},
 
 	connectRTC: function () {
 		// console.log(new Error().stack);
-    this._rtc = d1(this.selector).rtc(this, this.selectedNodes).connect();
+		this._rtc = d1(this.selector).rtc(this, this.selectedNodes).connect();
 		this.attachNeuronListeners();
 	},
 
@@ -63,7 +63,7 @@ Polymer({
 
 	detachNeuronListeners: function () {
 		var that = this;
-    if(!this.selectedNodes) return;
+		if(!this.selectedNodes) return;
 		this.selectedNodes.forEach(function (node) {
 			node.removeEventListener('state-changed', that.stateChangeCallback);
 		});
@@ -74,17 +74,17 @@ Polymer({
 		var newState = '';
 		this.selectedNodes.forEach(function (node) {
 			if (node.state === 'connected')
-          			count++;
+			count++;
 		});
 		if (count === 0)
-			newState = 'disconnected';
+		newState = 'disconnected';
 		else if (count < this.selectedNodes.length)
-			newState = 'partially-connected';
+		newState = 'partially-connected';
 		else
-			newState = 'connected';
+		newState = 'connected';
 
 		if (newState !== this.state) {
-        		this.state = newState;
+			this.state = newState;
 			this.fire('state-changed', this.state);
 		}
 	}
