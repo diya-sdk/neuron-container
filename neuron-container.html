@@ -38,19 +38,19 @@ Polymer({
 	},
 
 	clearRTC: function () {
-		if (this._rtc)
-		this._rtc.disconnect();
+		if (this._rtc) this._rtc.disconnect();
 
 		if(this.selectedNodes)
-		while (this.selectedNodes.length)
-		this.selectedNodes.pop();
+			while (this.selectedNodes.length) this.selectedNodes.pop();
+		this.selectedNodes = [];
 
 		this.detachNeuronListeners();
 	},
 
 	connectRTC: function () {
-		// console.log(new Error().stack);
-		this._rtc = d1(this.selector).rtc(this, this.selectedNodes).connect();
+		this._rtc = d1(this.selector).rtc();
+		createNeuronsFromDOM(this, this.selectedNodes, this._rtc);
+		this._rtc.connect();
 		this.attachNeuronListeners();
 	},
 
@@ -89,4 +89,54 @@ Polymer({
 		}
 	}
 });
+
+
+
+
+///////////////////////////////////////////////////////////////////////////////////
+///////////////////////////////////////////////////////////////////////////////////
+///////////////////////////////////////////////////////////////////////////////////
+
+function createNeuronsFromDOM(domNode, selectedNodes, rtc){
+	if(!domNode || !domNode.querySelectorAll) return ;
+
+	// For each neuron-* element with an associated channel ('name' attribute)
+	retrieveNeuronNodes(domNode).forEach(function(neuronNode){
+		if(Array.isArray(selectedNodes)) selectedNodes.push(neuronNode);
+
+		var channel = neuronNode.attributes["name"].value.replace(/\s+/, "");
+
+		// -> Notify the element when neurons or streams become available
+		rtc.use(channel, neuronNode.getAttribute("type"), function(dnId, neuron){
+			if(neuronNode.setNeuron) neuronNode.setNeuron(dnId, neuron);
+		}, function(dnId, stream) {
+			if(neuronNode.setStream) neuronNode.setStream(dnId, stream);
+		});
+
+		// <- Listen for streams addition from the element
+		neuronNode.addEventListener('stream', function(e) {
+			rtc.addStream(channel, e.detail.stream);
+		});
+	});
+
+	console.log(selectedNodes);
+
+}
+
+
+function retrieveNeuronNodes(parentNode) {
+	function isNeuronTag(node) {
+		return node.tagName.startsWith("NEURON-") && node.attributes["name"];
+	}
+
+	var neuronNodeList = parentNode.querySelectorAll('*');
+	var neuronNodes = [];
+	for(var i=0;i<neuronNodeList.length; i++)
+		if(isNeuronTag(neuronNodeList[i]))
+			neuronNodes.push(neuronNodeList[i]);
+	return neuronNodes;
+}
+
+
+
 </script>
