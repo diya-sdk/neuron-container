@@ -113,9 +113,12 @@ function createNeuronsFromDOM(domNode, selectedNodes, rtc){
 			if(neuronNode.setStream) neuronNode.setStream(dnId, stream);
 		});
 
-		// <- Listen for streams addition from the element
+		// <- Listen for streams addition/removal from the element
 		neuronNode.addEventListener('stream', function(e) {
 			rtc.addStream(channel, e.detail.stream);
+		});
+		neuronNode.addEventListener('stop', function(e) {
+			rtc.removeStream(channel, e.detail.stream);
 		});
 	});
 
