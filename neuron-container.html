@@ -18,9 +18,11 @@ Polymer({
 
 	ready: function () {
 		this.state = 'disconnected';
-		this.selectedNodes = [];
 		this.stateChangeCallback = this.computeState.bind(this);
 		document.addEventListener('visibilitychange', this.visibilityChange.bind(this), false);
+		if(this.selector) {
+			this.selectorChanged();
+		}
 	},
 
 	visibilityChange: function () {
@@ -34,18 +36,19 @@ Polymer({
 	},
 
 	selectorChanged: function () {
-		if(this.bypass) return;
+		if(!this.state || this.bypass) return;
 		this.clearRTC();
 		if(this.selector) this.connectRTC();
 	},
 
 	clearRTC: function () {
-		if (this._rtc)
-			this._rtc.disconnect();
+		if (this._rtc) this._rtc.disconnect();
 
-		if(this.selectedNodes)
+		if(this.selectedNodes) {
 			while (this.selectedNodes.length)
 				this.selectedNodes.pop();
+		}
+		this.selectedNodes = [];
 
 		this.detachNeuronListeners();
 
@@ -53,8 +56,9 @@ Polymer({
 	},
 
 	connectRTC: function () {
-		// console.log(new Error().stack);
-		this._rtc = d1(this.selector).rtc(this, this.selectedNodes).connect();
+		this._rtc = d1(this.selector).rtc();
+		createNeuronsFromDOM(this, this.selectedNodes, this._rtc);
+		this._rtc.connect();
 		this.attachNeuronListeners();
 	},
 
@@ -81,11 +85,11 @@ Polymer({
 			count++;
 		});
 		if (count === 0)
-			newState = 'disconnected';
+		newState = 'disconnected';
 		else if (count < this.selectedNodes.length)
-			newState = 'partially-connected';
+		newState = 'partially-connected';
 		else
-			newState = 'connected';
+		newState = 'connected';
 
 		if (newState !== this.state) {
 			this.state = newState;
@@ -93,4 +97,55 @@ Polymer({
 		}
 	}
 });
+
+
+
+
+///////////////////////////////////////////////////////////////////////////////////
+///////////////////////////////////////////////////////////////////////////////////
+///////////////////////////////////////////////////////////////////////////////////
+
+function createNeuronsFromDOM(domNode, selectedNodes, rtc){
+	if(!domNode || !domNode.querySelectorAll) return ;
+
+	// For each neuron-* element with an associated channel ('name' attribute)
+	retrieveNeuronNodes(domNode).forEach(function(neuronNode){
+		if(Array.isArray(selectedNodes)) selectedNodes.push(neuronNode);
+
+		var channel = neuronNode.attributes["name"].value.replace(/\s+/, "");
+
+		// -> Notify the element when neurons or streams become available
+		rtc.use(channel, neuronNode.getAttribute("type"), function(dnId, neuron){
+			if(neuronNode.setNeuron) neuronNode.setNeuron(dnId, neuron);
+		}, function(dnId, stream) {
+			if(neuronNode.setStream) neuronNode.setStream(dnId, stream);
+		});
+
+		// <- Listen for streams addition/removal from the element
+		neuronNode.addEventListener('stream', function(e) {
+			rtc.addStream(channel, e.detail.stream);
+		});
+		neuronNode.addEventListener('stop', function(e) {
+			rtc.removeStream(channel, e.detail.stream);
+		});
+	});
+
+}
+
+
+function retrieveNeuronNodes(parentNode) {
+	function isNeuronTag(node) {
+		return node.tagName.startsWith("NEURON-") && node.attributes["name"];
+	}
+
+	var neuronNodeList = parentNode.querySelectorAll('*');
+	var neuronNodes = [];
+	for(var i=0;i<neuronNodeList.length; i++)
+		if(isNeuronTag(neuronNodeList[i]))
+			neuronNodes.push(neuronNodeList[i]);
+	return neuronNodes;
+}
+
+
+
 </script>
