@@ -17,6 +17,7 @@ Polymer({
 	},
 
 	ready: function () {
+		this.selectedNodes = [];
 		this.rtcState = 'disconnected';
 		this.stateChangeCallback = this.computeState.bind(this);
 		document.addEventListener('visibilitychange', this.visibilityChange.bind(this), false);
