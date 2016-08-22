@@ -12,12 +12,12 @@ Polymer({
 
 	properties: {
 		selector: { notify: true, observer: 'selectorChanged' },
-		state: { notify: true },
+		rtcState: { notify: true },
 		bypass: { type:Boolean, notify: true, value: false }
 	},
 
 	ready: function () {
-		this.state = 'disconnected';
+		this.rtcState = 'disconnected';
 		this.stateChangeCallback = this.computeState.bind(this);
 		document.addEventListener('visibilitychange', this.visibilityChange.bind(this), false);
 		if(this.selector) {
@@ -36,7 +36,7 @@ Polymer({
 	},
 
 	selectorChanged: function () {
-		if(!this.state || this.bypass) return;
+		if(!this.rtcState || this.bypass) return;
 		this.clearRTC();
 		if(this.selector) this.connectRTC();
 	},
@@ -84,16 +84,14 @@ Polymer({
 			if (node.state === 'connected')
 			count++;
 		});
-		if (count === 0)
-		newState = 'disconnected';
-		else if (count < this.selectedNodes.length)
-		newState = 'partially-connected';
-		else
-		newState = 'connected';
 
-		if (newState !== this.state) {
-			this.state = newState;
-			this.fire('state-changed', this.state);
+		if (count === 0) newState = 'disconnected';
+		else if (count < this.selectedNodes.length) newState = 'partially-connected';
+		else newState = 'connected';
+
+		if (newState !== this.rtcState) {
+			this.rtcState = newState;
+			this.fire('state-changed', this.rtcState);
 		}
 	}
 });
